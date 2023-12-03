@@ -16,6 +16,10 @@ This is frontend starter project for nodejs-aws mentoring program. It uses the f
 - [Prettier](https://prettier.io/) as a code formatting tool
 - [TypeScript](https://www.typescriptlang.org/) as a type checking tool
 
+## FE URL
+
+https://azurecloudfrontfe0016.z16.web.core.windows.net/
+
 ## Available Scripts
 
 ### `start`
@@ -38,34 +42,32 @@ Runs tests in console, in browser or with coverage.
 
 Runs linting and formatting for all files in `src` folder.
 
-### `client:deploy`, `client:deploy:nc`
+### `client:deploy`
 
-Deploy the project build from `dist` folder to configured in `serverless.yml` AWS S3 bucket with or without confirmation.
+Deploy the project build from `dist` folder to configured in `terraform` Account Storage. Storage account should be configured in advance and added to the command.
 
-### `client:build:deploy`, `client:build:deploy:nc`
+### `client:build:deploy`
 
 Combination of `build` and `client:deploy` commands with or without confirmation.
 
-### `cloudfront:setup`
+## Commands to create Azure env by Terraform
 
-Deploy configured in `serverless.yml` stack via CloudFormation.
+`` ! Note commands should be executed from the `terraform` folder ``
 
-### `cloudfront:domainInfo`
+```
+!Notes:
+  - commands should be executed from the `terraform` folder
+  - before execution change name of the store in `terraform/main.tf`
+```
 
-Display cloudfront domain information in console.
+### `terraform init`
 
-### `cloudfront:invalidateCache`
+Init Terraform folders and providers
 
-Invalidate cloudfront cache.
+### `terraform plan`
 
-### `cloudfront:build:deploy`, `cloudfront:build:deploy:nc`
+Review what should be created
 
-Combination of `client:build:deploy` and `cloudfront:invalidateCache` commands with or without confirmation.
+### `terraform apply`
 
-### `cloudfront:update:build:deploy`, `cloudfront:update:build:deploy:nc`
-
-Combination of `cloudfront:setup` and `cloudfront:build:deploy` commands with or without confirmation.
-
-### `serverless:remove`
-
-Remove an entire stack configured in `serverless.yml` via CloudFormation.
+Setup everything on the Azure

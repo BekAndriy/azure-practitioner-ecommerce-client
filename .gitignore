@@ -25,3 +25,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Terraform initialization files
+.terraform/
+.terraform.*.lock.*
+.terraform.lock.*
+terraform.tfstate
+terraform.tfstate.*
