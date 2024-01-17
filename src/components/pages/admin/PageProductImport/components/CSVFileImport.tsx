@@ -1,16 +1,20 @@
-import React from "react";
+import { ChangeEvent, useState } from "react";
+import { AxiosError } from "axios";
+import { BlockBlobClient } from "@azure/storage-blob";
+import { useSnackbar } from "notistack";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import { createImportProductsSasUrl } from "~/queries/products";
 
 type CSVFileImportProps = {
-  url: string;
   title: string;
 };
 
-export default function CSVFileImport({ url, title }: CSVFileImportProps) {
-  const [file, setFile] = React.useState<File>();
-
-  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+export default function CSVFileImport({ title }: CSVFileImportProps) {
+  const [file, setFile] = useState<File>();
+  const [isLoading, setIsLoading] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
+  const onFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       const file = files[0];
@@ -23,37 +27,53 @@ export default function CSVFileImport({ url, title }: CSVFileImportProps) {
   };
 
   const uploadFile = async () => {
-    console.log("uploadFile to", url);
+    try {
+      if (!file) throw new Error("File not found");
 
-    // Get the presigned URL
-    // const response = await axios({
-    //   method: "GET",
-    //   url,
-    //   params: {
-    //     name: encodeURIComponent(file.name),
-    //   },
-    // });
-    // console.log("File to upload: ", file.name);
-    // console.log("Uploading to: ", response.data);
-    // const result = await fetch(response.data, {
-    //   method: "PUT",
-    //   body: file,
-    // });
-    // console.log("Result: ", result);
-    // setFile("");
+      setIsLoading(true);
+      const sasUrl = await createImportProductsSasUrl(
+        (
+          file.name.replace(/\.[a-z]+$/, "").match(/[a-zA-Z\d-_]+/gm) ?? [
+            "name",
+          ]
+        )?.join(""),
+      );
+      const blockBlobClient = new BlockBlobClient(sasUrl);
+      await blockBlobClient.uploadData(file);
+      enqueueSnackbar("File uploaded", { variant: "success" });
+      removeFile();
+    } catch (error) {
+      const e = error as AxiosError<{ unknown: string }>;
+      let message = "Failed to upload file. Please try again.";
+      if (e.response && e.response.data?.unknown) {
+        message = e.response.data.unknown;
+      }
+      enqueueSnackbar(message, {
+        variant: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
+
   return (
     <Box>
       <Typography variant="h6" gutterBottom>
         {title}
       </Typography>
-      {!file ? (
-        <input type="file" onChange={onFileChange} />
+      {isLoading ? (
+        <div>Loading...</div>
       ) : (
-        <div>
-          <button onClick={removeFile}>Remove file</button>
-          <button onClick={uploadFile}>Upload file</button>
-        </div>
+        <>
+          {!file ? (
+            <input type="file" accept=".csv" onChange={onFileChange} />
+          ) : (
+            <div>
+              <button onClick={removeFile}>Remove file</button>
+              <button onClick={uploadFile}>Upload file</button>
+            </div>
+          )}
+        </>
       )}
     </Box>
   );

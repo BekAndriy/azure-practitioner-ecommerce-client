@@ -7,7 +7,7 @@ import React from "react";
 export function useAvailableProducts() {
   return useQuery<AvailableProduct[], AxiosError>("products", async () => {
     const res = await axios.get<AvailableProduct[]>(
-      `${API_PATHS.product}/products`
+      `${API_PATHS.product}/products`,
     );
     return res.data;
   });
@@ -17,7 +17,7 @@ export function useInvalidateAvailableProducts() {
   const queryClient = useQueryClient();
   return React.useCallback(
     () => queryClient.invalidateQueries("products", { exact: true }),
-    []
+    [],
   );
 }
 
@@ -26,11 +26,11 @@ export function useAvailableProduct(id?: string) {
     ["product", { id }],
     async () => {
       const res = await axios.get<AvailableProduct>(
-        `${API_PATHS.product}/products/${id}`
+        `${API_PATHS.product}/products/${id}`,
       );
       return res.data;
     },
-    { enabled: !!id }
+    { enabled: !!id },
   );
 }
 
@@ -39,7 +39,7 @@ export function useRemoveProductCache() {
   return React.useCallback(
     (id?: string) =>
       queryClient.removeQueries(["products", { id }], { exact: true }),
-    []
+    [],
   );
 }
 
@@ -49,7 +49,7 @@ export function useUpsertAvailableProduct() {
       headers: {
         Authorization: `Basic ${localStorage.getItem("authorization_token")}`,
       },
-    })
+    }),
   );
 }
 
@@ -59,6 +59,12 @@ export function useDeleteAvailableProduct() {
       headers: {
         Authorization: `Basic ${localStorage.getItem("authorization_token")}`,
       },
-    })
+    }),
   );
+}
+
+export function createImportProductsSasUrl(fileName: string): Promise<string> {
+  return axios
+    .get(`${API_PATHS.bff}/products/import?name=${fileName}`)
+    .then(({ data }) => data.url);
 }
